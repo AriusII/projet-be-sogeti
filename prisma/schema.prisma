@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model todo_groups {
+  id         Int          @id @default(autoincrement())
+  user_id    Int
+  todo_name  String       @db.VarChar(255)
+  todo_desc  String       @default("N/A") @db.VarChar(255)
+  is_hide    Boolean      @default(false)
+  is_finish  Boolean      @default(false)
+  created_at DateTime?    @db.DateTime(0)
+  edited_at  DateTime?    @db.DateTime(0)
+  users      users        @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "uID")
+  todo_items todo_items[]
+
+  @@index([user_id], map: "uID")
+}
+
+model todo_items {
+  id          Int         @default(autoincrement())
+  group_id    Int
+  item_name   String      @db.VarChar(255)
+  status      Boolean
+  created_at  DateTime    @db.DateTime(0)
+  edited_at   DateTime?   @db.DateTime(0)
+  todo_groups todo_groups @relation(fields: [group_id], references: [id], onUpdate: Restrict, map: "iID")
+
+  @@id([id, group_id])
+  @@index([group_id], map: "iID")
+}
+
+model users {
+  id          Int           @id @default(autoincrement())
+  username    String        @db.VarChar(255)
+  password    String        @db.VarChar(255)
+  is_admin    Boolean       @default(false)
+  todo_groups todo_groups[]
+}
